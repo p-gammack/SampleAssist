@@ -74,20 +74,6 @@ private:
     juce::DrawableText display;
 };
 
-//class Refresh :
-//public juce::Timer
-//{
-//public:
-//    Refresh() {
-//        startTimer(1);
-//    }
-//    void timerCallback() override {
-//
-//    }
-//private:
-//
-//};
-
 //==============================================================================
 /**
 */

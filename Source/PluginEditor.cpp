@@ -92,6 +92,7 @@ AutoSamplerAudioProcessorEditor::AutoSamplerAudioProcessorEditor (AutoSamplerAud
 
 AutoSamplerAudioProcessorEditor::~AutoSamplerAudioProcessorEditor()
 {
+    stopTimer();
 }
 
 //==============================================================================
@@ -102,10 +103,6 @@ void AutoSamplerAudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour(colourBox);
     g.fillRect(waveBox);
     g.fillRect(infoBox);
-//    for (int i=0;i<4;i++)
-//        g.fillRect(infoTextBox[i]);
-//    g.setColour(colourAccent1);
-//    g.setFont(20.0f);
     g.setColour(juce::Colours::black);
     g.drawLine(recordLine, 1.0f);
 //    g.drawRect(waveBox);
@@ -142,8 +139,7 @@ void AutoSamplerAudioProcessorEditor::resized()
 
 void AutoSamplerAudioProcessorEditor::timerCallback()
 {
-
-    if (runState == RUNNING && audioProcessor.iCount >= 0) {
+    if (runState == RUNNING && audioProcessor.iCount >= 0) { // only run while counting down
         for (int i=0; i<=4; i++)
             if (audioProcessor.iCount == i)
                 infoText[1].setText(std::to_string(i));
@@ -206,7 +202,7 @@ void AutoSamplerAudioProcessorEditor::nextNoteButtonClicked()
     
     infoText[1].setText("4");
 
-    if (audioProcessor.iSampleIndex < 35) {
+    if (audioProcessor.iSampleIndex < 35) { // prevent index from exceeding array size
         audioProcessor.iSampleIndex++;
         infoText[2].setText(audioProcessor.sampleName[audioProcessor.iSampleIndex]);
     }
@@ -216,7 +212,7 @@ void AutoSamplerAudioProcessorEditor::nextNoteButtonClicked()
 
 void AutoSamplerAudioProcessorEditor::resetNoteButtonClicked()
 {
-    if (runState == RUNNING) {
+    if (runState == RUNNING) { // retry current recording
         runButtonClicked();
         runButtonClicked();
     }
@@ -233,7 +229,7 @@ void AutoSamplerAudioProcessorEditor::sampleSelectionChanged()
         audioProcessor.iSampleIndex = sampleSelection.getSelectedId() - 1;
         infoText[2].setText(audioProcessor.sampleName[audioProcessor.iSampleIndex]);
         
-        if (audioProcessor.iSampleIndex >= 35)
+        if (audioProcessor.iSampleIndex >= 35) // show that it's the end of the list
             nextNoteButton.setEnabled(false);
         else if (!nextNoteButton.isEnabled())
             nextNoteButton.setEnabled(true);
@@ -251,9 +247,9 @@ void AutoSamplerAudioProcessorEditor::chooseDirectory()
                                                             "",
                                                             true);
     
-    auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectDirectories;
+    auto chooserFlags = juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectDirectories; // only allow directories to be selected
     
-    directoryChooser->launchAsync(chooserFlags, [this] (const juce::FileChooser& fc) {
+    directoryChooser->launchAsync(chooserFlags, [this] (const juce::FileChooser& fc) { // open file browser
         
         auto file = fc.getResult();
         

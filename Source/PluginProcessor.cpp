@@ -42,7 +42,6 @@ AutoSamplerAudioProcessor::AutoSamplerAudioProcessor()
     iSampleIndex = 0;
     dSampleRate = 0;
     iSample = 0;
-    iFileNo = 100;
     iCountDown = 0;
     iCount = 0;
     iTimeStamps.clear();
@@ -73,16 +72,11 @@ void AutoSamplerAudioProcessor::startRecording()
         
         if (dSampleRate)
         {
-            //        std::string filePath = "/Users/patrickg/Desktop/tmp/tmp" + std::to_string(iFileNo) + ".wav";
-            //        iFileNo++;
             juce::String file = sampleDirectory + "/" + sampleName[iSampleIndex] + ".wav";
-            outputFile.operator=(file);
-            
-            //        juce::File outputFile ("/Users/patrickg/Desktop/tmp/tmp1.wav");
+            outputFile.operator=(file); // change file name
             outputFile.deleteFile();
-            outputFile.create();
-            //        auto outputStream = outputFile.createOutputStream();
-            //        juce::FileOutputStream outputStream (outputFile, dSampleRate*10);
+            outputFile.create(); // overwrite existing file
+
             if (auto outputStream = std::unique_ptr<juce::FileOutputStream> (outputFile.createOutputStream()))
             {
                 juce::WavAudioFormat wavFormat;
@@ -116,7 +110,6 @@ void AutoSamplerAudioProcessor::stopRecording()
     runState = NOT_RUNNING;
     threadedWriter.reset();
     iTimeStamps.push_back(iSample);
-//    printf("recordState: %i", recordState);
 }
 //==============================================================================
 const juce::String AutoSamplerAudioProcessor::getName() const
@@ -225,12 +218,8 @@ void AutoSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     dSampleRate = getSampleRate();
     iBufferSize = buffer.getNumSamples();
     
-//    for (int i=0; i<=4; i++)
-//        if (iCountDown <= iBufferSize*i && iCountDown >= iBufferSize*(i-1))
-//            printf("%i\n", i);
-//    iCountDown -= iBufferSize;
     if (runState == RUNNING && iCount > 0) {
-        if (iCountDown > dSampleRate*3)
+        if (iCountDown > dSampleRate*3) // count down at ~1s intervals
             iCount = 4;
         else if (iCountDown > dSampleRate*2)
             iCount = 3;
@@ -239,18 +228,12 @@ void AutoSamplerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         else if (iCountDown > dSampleRate*0.5f)
             iCount = 1;
         else if (iCountDown > 0 && recordState == RECORD_ARMED)
-            startRecording();
+            startRecording(); // start recording at ~500ms before 0
         else if (iCountDown <= 0)
             iCount = 0;
         iCountDown -= iBufferSize;
 //        printf("%i\n", iCount);
     }
-
-    
-//    if (recordState == RECORDING)
-//        iSample += 1;
-//    if (iSample % 48000 == 0)
-//        printf("\n+1");
     
     const juce::ScopedLock sl (writerLock);
     

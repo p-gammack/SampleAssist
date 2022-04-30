@@ -102,8 +102,7 @@ private:
     RunState runState;
     RecordState recordState;
     juce::File outputFile;
-    int iFileNo;
-
+    
     int iCountDown;
     int iBufferSize;
     int iSample;
